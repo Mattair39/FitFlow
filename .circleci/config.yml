@@ -1,0 +1,143 @@
+version: 2.1
+
+orbs:
+  sonarcloud: sonarsource/sonarcloud@4.0.0
+
+executors:
+  backend_executor:
+    docker:
+      - image: cimg/python:3.11
+    working_directory: ~/project
+
+  frontend_executor:
+    docker:
+      - image: cimg/node:20.19
+    working_directory: ~/project
+
+  docker_executor:
+    docker:
+      - image: cimg/base:stable
+    working_directory: ~/project
+
+commands:
+  install_backend_dependencies:
+    steps:
+      - restore_cache:
+          keys:
+            - backend-v1-{{ checksum "fitFlow/requirements.txt" }}-{{ checksum "fitFlow/requirements-ci.txt" }}
+            - backend-v1-
+      - run:
+          name: Install backend dependencies
+          command: |
+            python -m pip install --upgrade pip
+            python -m pip install -r fitFlow/requirements-ci.txt
+      - save_cache:
+          key: backend-v1-{{ checksum "fitFlow/requirements.txt" }}-{{ checksum "fitFlow/requirements-ci.txt" }}
+          paths:
+            - ~/.cache/pip
+
+  install_frontend_dependencies:
+    steps:
+      - restore_cache:
+          keys:
+            - frontend-v1-{{ checksum "fitFlow/front-react/doc/package-lock.json" }}
+            - frontend-v1-
+      - run:
+          name: Install frontend dependencies
+          command: npm ci --prefix fitFlow/front-react/doc
+      - save_cache:
+          key: frontend-v1-{{ checksum "fitFlow/front-react/doc/package-lock.json" }}
+          paths:
+            - ~/.npm
+
+jobs:
+  backend_style:
+    executor: backend_executor
+    steps:
+      - checkout
+      - install_backend_dependencies
+      - run:
+          name: Run backend style analysis
+          command: |
+            cd fitFlow
+            python scripts/run_backend_style.py
+      - store_artifacts:
+          path: fitFlow/reports/backend/ruff.json
+          destination: backend-style/ruff.json
+
+  frontend_style:
+    executor: frontend_executor
+    steps:
+      - checkout
+      - install_frontend_dependencies
+      - run:
+          name: Run frontend style analysis
+          command: npm --prefix fitFlow/front-react/doc run lint:report
+      - store_artifacts:
+          path: fitFlow/front-react/doc/reports/frontend/eslint.json
+          destination: frontend-style/eslint.json
+
+  backend_tests:
+    executor: backend_executor
+    steps:
+      - checkout
+      - install_backend_dependencies
+      - run:
+          name: Run backend tests and coverage
+          command: |
+            cd fitFlow
+            python -m pytest
+            cd ..
+            python fitFlow/scripts/normalize_backend_coverage.py
+      - store_test_results:
+          path: fitFlow/reports/backend
+      - store_artifacts:
+          path: fitFlow/reports/backend
+          destination: backend-reports
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - fitFlow/reports/backend
+
+
+  frontend_tests:
+    executor: frontend_executor
+    steps:
+      - checkout
+      - install_frontend_dependencies
+      - run:
+          name: Run frontend tests and coverage
+          command: |
+            npm --prefix fitFlow/front-react/doc run test:coverage
+            node fitFlow/scripts/normalize_frontend_lcov.mjs
+      - store_test_results:
+          path: fitFlow/front-react/doc/reports/frontend
+      - store_artifacts:
+          path: fitFlow/front-react/doc/reports/frontend
+          destination: frontend-reports
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - fitFlow/front-react/doc/reports/frontend
+
+  sonar_analysis:
+    executor: docker_executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/project
+      - sonarcloud/scan
+
+workflows:
+  quality:
+    jobs:
+      - backend_style
+      - frontend_style
+      - backend_tests
+      - frontend_tests
+      - sonar_analysis:
+          requires:
+            - backend_style
+            - frontend_style
+            - backend_tests
+            - frontend_tests

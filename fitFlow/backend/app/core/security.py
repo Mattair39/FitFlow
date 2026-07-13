@@ -1,9 +1,11 @@
+import os
 from datetime import datetime, timedelta
+from secrets import token_urlsafe
 
 from jose import jwt
 from passlib.context import CryptContext
 
-SECRET_KEY = "fitflow-secret"
+SECRET_KEY = os.getenv("FITFLOW_SECRET_KEY") or token_urlsafe(32)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

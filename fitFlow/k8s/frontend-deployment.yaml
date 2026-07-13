@@ -15,9 +15,17 @@ spec:
       labels:
         app: fitflow-frontend
     spec:
+      automountServiceAccountToken: false
       containers:
         - name: fitflow-frontend
           image: mattair39/fitflow-frontend:v1
           imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
           ports:
-            - containerPort: 80
+            - containerPort: 8080

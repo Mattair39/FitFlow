@@ -15,9 +15,24 @@ spec:
       labels:
         app: fitflow-backend
     spec:
+      automountServiceAccountToken: false
       containers:
         - name: fitflow-backend
           image: mattair39/fitflow-backend:v1
           imagePullPolicy: Always
+          env:
+            - name: FITFLOW_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fitflow-secrets
+                  key: FITFLOW_SECRET_KEY
+                  optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           ports:
             - containerPort: 8000

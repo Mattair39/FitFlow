@@ -2,6 +2,27 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
+const API_BASE_URL = 'http://localhost:8000';
+const CALCULATOR_PATTERN = /^[a-zA-Z0-9_-]+$/;
+
+function getSafeId(value) {
+  const numericValue = Number(value);
+  return Number.isSafeInteger(numericValue) && numericValue > 0 ? String(numericValue) : null;
+}
+
+function getSafeCalculatorType(value) {
+  return CALCULATOR_PATTERN.test(value) ? value : 'standard';
+}
+
+function buildApiUrl(pathSegments, query = {}) {
+  const url = new URL(API_BASE_URL);
+  url.pathname = pathSegments.map(segment => encodeURIComponent(segment)).join('/');
+  Object.entries(query).forEach(([key, value]) => {
+    url.searchParams.set(key, String(value));
+  });
+  return url.toString();
+}
+
 export default function EnhancedNutritionPlanner() {
   const { token, user } = useContext(AuthContext);
   const [planTypes, setPlanTypes] = useState([]);
@@ -44,11 +65,15 @@ export default function EnhancedNutritionPlanner() {
   }, [token]);
 
   const fetchAnalysis = useCallback(async (calcType = 'standard') => {
-    if (!user?.user_id) return;
+    const safeUserId = getSafeId(user?.user_id);
+    if (!safeUserId) return;
 
     try {
       const response = await fetch(
-        `http://localhost:8000/nutrition-enhanced/client/${user.user_id}/analysis?calculator_type=${calcType}`,
+        buildApiUrl(
+          ['nutrition-enhanced', 'client', safeUserId, 'analysis'],
+          { calculator_type: getSafeCalculatorType(calcType) }
+        ),
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.ok) {
@@ -109,12 +134,13 @@ export default function EnhancedNutritionPlanner() {
   };
 
   const compareCalculators = async () => {
-    if (!user?.user_id) return;
+    const safeUserId = getSafeId(user?.user_id);
+    if (!safeUserId) return;
 
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/nutrition-enhanced/compare-calculators/${user.user_id}`,
+        buildApiUrl(['nutrition-enhanced', 'compare-calculators', safeUserId]),
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.ok) {

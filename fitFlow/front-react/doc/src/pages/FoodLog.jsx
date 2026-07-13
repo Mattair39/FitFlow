@@ -1,6 +1,27 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
+const API_BASE_URL = 'http://localhost:8000';
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+function getSafeDate(value) {
+  return DATE_PATTERN.test(value) ? value : null;
+}
+
+function getSafeId(value) {
+  const numericValue = Number(value);
+  return Number.isSafeInteger(numericValue) && numericValue > 0 ? String(numericValue) : null;
+}
+
+function buildApiUrl(pathSegments, query = {}) {
+  const url = new URL(API_BASE_URL);
+  url.pathname = pathSegments.map(segment => encodeURIComponent(segment)).join('/');
+  Object.entries(query).forEach(([key, value]) => {
+    url.searchParams.set(key, String(value));
+  });
+  return url.toString();
+}
+
 export default function FoodLog() {
   const { token } = useContext(AuthContext);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -26,11 +47,12 @@ export default function FoodLog() {
   }, [token]);
 
   const fetchPlanForDate = useCallback(async () => {
-    if (!selectedDate) return;
+    const safeDate = getSafeDate(selectedDate);
+    if (!safeDate) return;
 
     try {
       const response = await fetch(
-        `http://localhost:8000/nutrition-plans/by-date/${selectedDate}`,
+        buildApiUrl(['nutrition-plans', 'by-date', safeDate]),
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -49,13 +71,14 @@ export default function FoodLog() {
   }, [selectedDate, token]);
 
   const fetchPlanStatus = useCallback(async () => {
-    if (!selectedDate) return;
+    const safeDate = getSafeDate(selectedDate);
+    if (!safeDate) return;
 
     try {
       // NUEVO: Agregar timestamp para evitar cache del browser
       const timestamp = new Date().getTime();
       const response = await fetch(
-        `http://localhost:8000/nutrition-plans/status/${selectedDate}?t=${timestamp}`,
+        buildApiUrl(['nutrition-plans', 'status', safeDate], { t: timestamp }),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -145,6 +168,12 @@ export default function FoodLog() {
   }, [planForDate, planStatus, updateEntriesWithConsumedData]);
 
   const deletePlan = async (planId, planName, force = false) => {
+    const safePlanId = getSafeId(planId);
+    if (!safePlanId) {
+      setMessage("Error: plan inválido");
+      return;
+    }
+
     const confirmMessage = force
       ? `Â¿EstÃ¡s seguro de que quieres eliminar "${planName}" del ${selectedDate} y TODOS sus registros asociados?`
       : `Â¿EstÃ¡s seguro de que quieres eliminar "${planName}" del ${selectedDate}?`;
@@ -153,8 +182,8 @@ export default function FoodLog() {
 
     try {
       const endpoint = force
-        ? `http://localhost:8000/nutrition-plans/${planId}/force`
-        : `http://localhost:8000/nutrition-plans/${planId}`;
+        ? buildApiUrl(['nutrition-plans', safePlanId, 'force'])
+        : buildApiUrl(['nutrition-plans', safePlanId]);
 
       const response = await fetch(endpoint, {
         method: 'DELETE',
