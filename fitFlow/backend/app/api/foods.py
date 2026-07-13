@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import List
 
+from fastapi import APIRouter, Depends, HTTPException
 from fitFlow.backend.app.database.session import get_db
 from fitFlow.backend.app.models.food import Food
 from fitFlow.backend.app.schemas.food import FoodCreate, FoodOut
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/foods", tags=["Foods"])
 
@@ -55,7 +54,7 @@ def update_food(food_id: int, food: FoodCreate, db: Session = Depends(get_db)):
     db.refresh(existing_food)
     return existing_food
 
-@router.get("/", response_model=List[FoodOut])
+@router.get("/", response_model=list[FoodOut])
 def list_foods(db: Session = Depends(get_db)):
     return db.query(Food).all()
 

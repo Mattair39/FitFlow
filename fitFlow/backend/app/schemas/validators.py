@@ -1,5 +1,6 @@
 import re
 
+
 def validate_ecuadorian_cedula(cedula: str) -> str:
     """
     Valida cédula ecuatoriana:

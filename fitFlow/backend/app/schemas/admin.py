@@ -1,9 +1,11 @@
 # backend/app/schemas/admin.py
-from pydantic import BaseModel, EmailStr, validator
+import re
 from datetime import date
+
 from fitFlow.backend.app.schemas.user import Sex
 from fitFlow.backend.app.schemas.validators import validate_ecuadorian_cedula
-import re
+from pydantic import BaseModel, EmailStr, validator
+
 
 class AdminCreate(BaseModel):
     first_name: str

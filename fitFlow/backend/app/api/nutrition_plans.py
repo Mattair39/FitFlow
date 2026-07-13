@@ -1,26 +1,24 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func
-from typing import Optional, List
+from fitFlow.backend.app.api.auth import User, get_current_user
 from fitFlow.backend.app.database.session import get_db
-from fitFlow.backend.app.models.food import Food
+from fitFlow.backend.app.models.client import Client
 from fitFlow.backend.app.models.food_log import FoodLog
 from fitFlow.backend.app.models.nutrition_plan import NutritionPlan
 from fitFlow.backend.app.models.nutrition_plan_meal import NutritionPlanMeal
-from fitFlow.backend.app.models.client import Client
-from fitFlow.backend.app.schemas.nutrition_plan import NutritionPlanCreate, NutritionPlanOut
-from fitFlow.backend.app.api.auth import get_current_user, User
+from fitFlow.backend.app.schemas.nutrition_plan import NutritionPlanCreate
+from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import Session, joinedload
 
 router = APIRouter(prefix="/nutrition-plans", tags=["NutritionPlans"])
 
 
 def get_user_role(user_id: int, db: Session):
     """Determinar el rol del usuario"""
-    from fitFlow.backend.app.models.client import Client
     try:
-        from fitFlow.backend.app.models.nutritionist import Nutritionist
         from fitFlow.backend.app.models.admin import Admin
+        from fitFlow.backend.app.models.nutritionist import Nutritionist
     except ImportError:
         # Si no existen estos modelos, solo verificar Client
         pass
@@ -37,7 +35,7 @@ def get_user_role(user_id: int, db: Session):
         admin = db.query(Admin).filter(Admin.admin_id == user_id).first()
         if admin:
             return "Admin"
-    except:
+    except Exception:
         pass
 
     return "Cliente"  # Default fallback
@@ -110,19 +108,19 @@ def create_plan(plan: NutritionPlanCreate,
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(500, f"Error al crear el plan: {str(e)}")
+        raise HTTPException(500, f"Error al crear el plan: {str(e)}") from e
 
 
 @router.get("/my-plans")
 def get_my_plans(
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db),
-        specific_date: Optional[date] = Query(None, description="Fecha específica (YYYY-MM-DD)"),
-        start_date: Optional[date] = Query(None, description="Fecha de inicio del rango"),
-        end_date: Optional[date] = Query(None, description="Fecha de fin del rango"),
-        week_offset: Optional[int] = Query(None,
+        specific_date: date | None = Query(None, description="Fecha específica (YYYY-MM-DD)"),
+        start_date: date | None = Query(None, description="Fecha de inicio del rango"),
+        end_date: date | None = Query(None, description="Fecha de fin del rango"),
+        week_offset: int | None = Query(None,
                                            description="Semanas desde hoy (0=esta semana, 1=próxima, -1=anterior)"),
-        month_year: Optional[str] = Query(None, description="Mes específico (YYYY-MM)")
+        month_year: str | None = Query(None, description="Mes específico (YYYY-MM)")
 ):
     """
     Obtener planes del usuario con filtros de fecha avanzados
@@ -175,8 +173,8 @@ def get_my_plans(
                         NutritionPlan.plan_date <= month_end
                     )
                 )
-            except ValueError:
-                raise HTTPException(400, "Formato de month_year inválido. Use YYYY-MM")
+            except ValueError as e:
+                raise HTTPException(400, "Formato de month_year inválido. Use YYYY-MM") from e
 
         plans = query.order_by(NutritionPlan.created_at.desc()).all()
 
@@ -213,7 +211,7 @@ def get_my_plans(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(500, f"Error al obtener planes: {str(e)}")
+        raise HTTPException(500, f"Error al obtener planes: {str(e)}") from e
 
 
 @router.get("/by-date/{target_date}")
@@ -284,7 +282,7 @@ def get_week_overview(
         # Intentar buscar por plan_date, si falla buscar por created_at
         try:
             plan = plan_query.filter(NutritionPlan.plan_date == day_date).first()
-        except:
+        except Exception:
             # Si plan_date no existe o falla, buscar por fecha de creación
             plan = plan_query.filter(
                 func.date(NutritionPlan.created_at) == day_date
@@ -375,7 +373,7 @@ def delete_plan(plan_id: int, current_user: User = Depends(get_current_user), db
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(500, f"Error al eliminar el plan: {str(e)}")
+        raise HTTPException(500, f"Error al eliminar el plan: {str(e)}") from e
 
 
 @router.delete("/{plan_id}/force")
@@ -424,7 +422,7 @@ def force_delete_plan(plan_id: int, current_user: User = Depends(get_current_use
 
     except Exception as e:
         db.rollback()
-        raise HTTPException(500, f"Error al eliminar el plan: {str(e)}")
+        raise HTTPException(500, f"Error al eliminar el plan: {str(e)}") from e
 
 
 @router.get("/status/{target_date}")
@@ -614,7 +612,7 @@ def check_date_availability(target_date: date,
                 NutritionPlan.plan_date == target_date
             )
         ).first()
-    except:
+    except Exception:
         # Si falla por plan_date, la columna no existe, retornar disponible
         existing_plan = None
 

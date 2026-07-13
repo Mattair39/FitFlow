@@ -1,12 +1,12 @@
 from datetime import date, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func
+from fitFlow.backend.app.api.auth import User, get_current_user
 from fitFlow.backend.app.database.session import get_db
 from fitFlow.backend.app.models.client import Client
 from fitFlow.backend.app.models.food_log import FoodLog
-from fitFlow.backend.app.models.food import Food
-from fitFlow.backend.app.api.auth import get_current_user, User
+from sqlalchemy import func
+from sqlalchemy.orm import Session, joinedload
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 

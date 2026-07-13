@@ -1,20 +1,15 @@
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import List
-from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
-from fitFlow.backend.app.schemas.user import UserOut, UserLogin
-
-from fitFlow.backend.app.models.user import User
+from fitFlow.backend.app.core.security import SECRET_KEY, create_access_token, verify_password
+from fitFlow.backend.app.database.session import get_db
+from fitFlow.backend.app.models.admin import Admin
 from fitFlow.backend.app.models.client import Client
 from fitFlow.backend.app.models.nutritionist import Nutritionist
-from fitFlow.backend.app.models.admin import Admin
-from fitFlow.backend.app.services.user_service import register_user
-from fitFlow.backend.app.core.security import verify_password, create_access_token
-from fitFlow.backend.app.database.session import get_db
-from fitFlow.backend.app.core.security import SECRET_KEY
-
+from fitFlow.backend.app.models.user import User
+from fitFlow.backend.app.schemas.user import UserOut
+from jose import JWTError, jwt
+from sqlalchemy.orm import Session
 
 ALGORITHM = "HS256"
 
@@ -40,7 +35,7 @@ def get_current_user(token: str = Depends(oauth2_scheme),
         if cedula is None:
             raise cred_exc
     except JWTError:
-        raise cred_exc
+        raise cred_exc from None
     user = db.query(User).filter(User.cedula == cedula).first()
     if not user:
         raise cred_exc
@@ -63,7 +58,7 @@ def me(current_user: User = Depends(get_current_user), db: Session = Depends(get
 
 
 # NUTRITIONISTS
-@router.get("/nutritionists", response_model=List[UserOut])
+@router.get("/nutritionists", response_model=list[UserOut])
 def list_nutritionists(db: Session = Depends(get_db)):
     nutritionists = db.query(Nutritionist).all()
     result = []
@@ -73,7 +68,7 @@ def list_nutritionists(db: Session = Depends(get_db)):
     return result
 
 # ADMINS
-@router.get("/admins", response_model=List[UserOut])
+@router.get("/admins", response_model=list[UserOut])
 def list_admins(db: Session = Depends(get_db)):
     admins = db.query(Admin).all()
     result = []
@@ -92,7 +87,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Usuario eliminado correctamente"}
 
-@router.get("/users", response_model=List[UserOut])
+@router.get("/users", response_model=list[UserOut])
 def list_users(db: Session = Depends(get_db)):
     users = db.query(User).all()
     result = []
@@ -102,7 +97,7 @@ def list_users(db: Session = Depends(get_db)):
     return result
 
 #CLIENTS
-@router.get("/clients", response_model=List[UserOut])
+@router.get("/clients", response_model=list[UserOut])
 def list_clients(db: Session = Depends(get_db)):
     clients = db.query(Client).all()
     result = []

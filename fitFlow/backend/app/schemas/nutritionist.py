@@ -1,16 +1,11 @@
-import enum
+import re
+from datetime import date
 from enum import Enum
 
-from pydantic import BaseModel
-from pydantic import BaseModel, EmailStr, validator
-from datetime import date
 from fitFlow.backend.app.schemas.user import Sex
 from fitFlow.backend.app.schemas.validators import validate_ecuadorian_cedula
-import re
+from pydantic import BaseModel, validator
 
-class Sex(str, enum.Enum):
-    Masculino = "Masculino"
-    Femenino = "Femenino"
 
 class EspecialidadNutricionista(str, Enum):
     nutricion_clinica = "Nutrición Clínica"

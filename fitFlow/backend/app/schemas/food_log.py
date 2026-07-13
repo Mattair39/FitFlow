@@ -1,9 +1,8 @@
-from typing import Optional
 
-from pydantic import BaseModel, confloat
 from datetime import date
 
 from fitFlow.backend.app.models.nutrition_plan_meal import MealType
+from pydantic import BaseModel, confloat
 
 
 class FoodLogCreate(BaseModel):

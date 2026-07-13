@@ -39,7 +39,7 @@ exclude_lines = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py311"
 exclude = [
   ".git",
   "__pycache__",
@@ -50,4 +50,7 @@ exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
-ignore = ["E501"]
+ignore = [
+  "E501",
+  "B008"
+]

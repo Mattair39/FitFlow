@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, ForeignKey, Enum, Float
-from sqlalchemy.orm import relationship
-from fitFlow.backend.app.database.session import Base
 import enum
+
+from fitFlow.backend.app.database.session import Base
+from sqlalchemy import Column, Enum, Float, ForeignKey, Integer
+from sqlalchemy.orm import relationship
+
 
 class MealType(str, enum.Enum):
     Desayuno = "Desayuno"

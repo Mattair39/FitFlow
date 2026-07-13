@@ -1,21 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from typing import Optional
 from datetime import date
-from pydantic import BaseModel
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fitFlow.backend.app.api.auth import User, get_current_user
 from fitFlow.backend.app.database.session import get_db
 from fitFlow.backend.app.models.client import Client
-from fitFlow.backend.app.api.auth import get_current_user, User
+from fitFlow.backend.app.services.nutrition_analysis import NutritionAnalysisService
 
 # DEPENDENCY INVERSION PRINCIPLE - Importamos abstracciones, no implementaciones concretas
 from fitFlow.backend.app.services.nutrition_calculator import (
     INutritionCalculator,
+    SportNutritionCalculator,
     StandardNutritionCalculator,
-    SportNutritionCalculator
 )
 from fitFlow.backend.app.services.plan_factory import NutritionPlanFactory
-from fitFlow.backend.app.services.nutrition_analysis import NutritionAnalysisService
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/nutrition-enhanced", tags=["NutritionEnhanced"])
 
@@ -125,9 +124,9 @@ def generate_enhanced_plan(
         }
 
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise HTTPException(400, str(e)) from e
     except Exception as e:
-        raise HTTPException(500, f"Error interno: {str(e)}")
+        raise HTTPException(500, f"Error interno: {str(e)}") from e
 
 
 @router.get("/client/{user_id}/analysis")
@@ -165,7 +164,7 @@ def get_enhanced_analysis(
         }
 
     except Exception as e:
-        raise HTTPException(500, f"Error en análisis: {str(e)}")
+        raise HTTPException(500, f"Error en análisis: {str(e)}") from e
 
 
 @router.get("/compare-calculators/{user_id}")
@@ -224,7 +223,7 @@ def compare_calculators(
         }
 
     except Exception as e:
-        raise HTTPException(500, f"Error en comparación: {str(e)}")
+        raise HTTPException(500, f"Error en comparación: {str(e)}") from e
 
 
 def _get_calculator_recommendation(client: Client) -> str:

@@ -1,8 +1,8 @@
 # En schemas/nutrition_plan.py
-from datetime import datetime, date
-from pydantic import BaseModel, constr, conlist, confloat, validator
-from typing import List, Optional
+from datetime import date, datetime
+
 from fitFlow.backend.app.models.nutrition_plan_meal import MealType
+from pydantic import BaseModel, confloat, conlist, constr, validator
 
 
 class NutritionPlanMealCreate(BaseModel):
@@ -15,7 +15,7 @@ class NutritionPlanCreate(BaseModel):
     user_id: int
     nutritionist_id: int
     name: constr(min_length=2, max_length=100)
-    description: Optional[constr(max_length=255)] = None
+    description: constr(max_length=255) | None = None
     plan_date: date  # ← NUEVO: Fecha obligatoria del plan
     meals: conlist(NutritionPlanMealCreate)
 
@@ -38,10 +38,10 @@ class PlanMealOut(BaseModel):
 class NutritionPlanOut(BaseModel):
     plan_id: int
     name: str
-    description: Optional[str]
+    description: str | None
     plan_date: date  # ← NUEVO en salida
-    created_at: Optional[datetime]
-    meals: List[PlanMealOut]
+    created_at: datetime | None
+    meals: list[PlanMealOut]
 
     class Config:
         from_attributes = True

@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float
 from fitFlow.backend.app.database.session import Base
+from sqlalchemy import Column, Float, Integer, String
+
 
 class Food(Base):
     __tablename__ = "foods"

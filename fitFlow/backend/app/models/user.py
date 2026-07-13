@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, String, Date, Enum
-from sqlalchemy.orm import relationship
-from fitFlow.backend.app.database.session import Base
 import enum
+
+from fitFlow.backend.app.database.session import Base
+from sqlalchemy import Column, Date, Enum, Integer, String
+from sqlalchemy.orm import relationship
+
 
 class Sex(enum.Enum):
     Masculino = "Masculino"

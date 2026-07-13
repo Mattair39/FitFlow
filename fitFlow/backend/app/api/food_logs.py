@@ -1,15 +1,15 @@
 from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
-from typing import List
+from fitFlow.backend.app.api.auth import get_current_user
 from fitFlow.backend.app.database.session import get_db
 from fitFlow.backend.app.models.food_log import FoodLog
-from fitFlow.backend.app.models.user import User
 from fitFlow.backend.app.models.nutrition_plan import NutritionPlan
 from fitFlow.backend.app.models.nutrition_plan_meal import NutritionPlanMeal
+from fitFlow.backend.app.models.user import User
 from fitFlow.backend.app.schemas.food_log import FoodLogCreate
-from fitFlow.backend.app.api.auth import get_current_user
+from sqlalchemy import and_, func
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/food-logs", tags=["FoodLogs"])
 
@@ -41,7 +41,7 @@ def get_consumed_amount(db: Session, user_id: int, date: str, food_id: int, meal
 
 
 @router.post("/")
-def log_food(entries: List[FoodLogCreate],
+def log_food(entries: list[FoodLogCreate],
              current_user: User = Depends(get_current_user),
              db: Session = Depends(get_db)):
     debug_info = {
@@ -52,7 +52,7 @@ def log_food(entries: List[FoodLogCreate],
 
     try:
         # Validar todas las entradas antes de insertar
-        for i, entry in enumerate(entries):
+        for entry in entries:
             effective_date = entry.date if entry.date else datetime.utcnow().date()
 
             # Verificar que existe un plan para esta fecha
@@ -141,4 +141,4 @@ def log_food(entries: List[FoodLogCreate],
             "error_type": str(type(e)),
             "debug_info": debug_info
         }
-        raise HTTPException(422, detail=error_detail)
+        raise HTTPException(422, detail=error_detail) from e

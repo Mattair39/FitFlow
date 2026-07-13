@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
 from fitFlow.backend.app.database.session import Base
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
 
 class Admin(Base):
     __tablename__ = "admins"

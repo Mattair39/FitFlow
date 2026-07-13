@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Date, UniqueConstraint
-from sqlalchemy.orm import relationship
 from datetime import datetime
+
 from fitFlow.backend.app.database.session import Base
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy.orm import relationship
 
 
 class NutritionPlan(Base):

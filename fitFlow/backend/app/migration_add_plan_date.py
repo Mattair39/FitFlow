@@ -1,5 +1,5 @@
-import sqlite3
 import os
+import sqlite3
 from datetime import date, timedelta
 
 
@@ -54,7 +54,7 @@ def run_migration(db_path="fitflow.db"):
         # Asignar fechas escalonadas por usuario
         user_plan_count = {}
 
-        for plan_id, user_id, created_at in plans:
+        for plan_id, user_id, _created_at in plans:
             if user_id not in user_plan_count:
                 user_plan_count[user_id] = 0
 
@@ -84,9 +84,9 @@ def run_migration(db_path="fitflow.db"):
         cursor.execute("SELECT COUNT(*) FROM nutrition_plans WHERE plan_date IS NOT NULL")
         updated_count = cursor.fetchone()[0]
 
-        print(f"✅ Migración completada exitosamente!")
+        print("✅ Migración completada exitosamente!")
         print(f"📊 {updated_count} planes actualizados con fechas")
-        print(f"🔒 Índice único creado para prevenir duplicados por día")
+        print("🔒 Índice único creado para prevenir duplicados por día")
 
         # Mostrar algunos ejemplos
         cursor.execute("""

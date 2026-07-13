@@ -1,16 +1,15 @@
-from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fitFlow.backend.app.core.security import get_password_hash
 from fitFlow.backend.app.database.session import get_db
-from fitFlow.backend.app.models.user import User
+from fitFlow.backend.app.models.admin import Admin
 from fitFlow.backend.app.models.client import Client
 from fitFlow.backend.app.models.nutritionist import Nutritionist
-from fitFlow.backend.app.models.admin import Admin
+from fitFlow.backend.app.models.user import User
+from fitFlow.backend.app.schemas.admin import AdminCreate
 from fitFlow.backend.app.schemas.client import ClientCreate, ClientOut
 from fitFlow.backend.app.schemas.nutritionist import NutritionistCreate
-from fitFlow.backend.app.schemas.admin import AdminCreate
-from fitFlow.backend.app.core.security import get_password_hash
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/register", tags=["Registration"])
 

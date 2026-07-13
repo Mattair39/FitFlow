@@ -1,9 +1,8 @@
-import enum
 
-from sqlalchemy import Column, Integer, ForeignKey, Enum, Float, Date
-from sqlalchemy.orm import relationship
 from fitFlow.backend.app.database.session import Base
 from fitFlow.backend.app.models.nutrition_plan_meal import MealType
+from sqlalchemy import Column, Date, Enum, Float, ForeignKey, Integer
+from sqlalchemy.orm import relationship
 
 
 class FoodLog(Base):

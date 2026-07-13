@@ -3,8 +3,8 @@
 Script para verificar los datos del plan y comidas
 """
 
-import sqlite3
 import os
+import sqlite3
 
 
 def debug_plan_data(db_path=None):
@@ -81,7 +81,7 @@ def debug_plan_data(db_path=None):
             print(f"  - {meal_type}: {food_name} (Porción: {portion_size}, Food ID: {food_id})")
 
         # Verificar registros de food_logs para el plan
-        print(f"\n📝 REGISTROS DE COMIDAS PARA FECHA 2025-06-03:")
+        print("\n📝 REGISTROS DE COMIDAS PARA FECHA 2025-06-03:")
         cursor.execute("""
             SELECT fl.log_id, fl.meal_type, fl.portion_size, fl.date, f.name as food_name, f.food_id
             FROM food_logs fl
@@ -101,7 +101,7 @@ def debug_plan_data(db_path=None):
             print("❌ No hay registros de comidas para 2025-06-03")
 
         # Verificar si hay problemas de duplicados o inconsistencias
-        print(f"\n🔍 ANÁLISIS DE CONSISTENCIA:")
+        print("\n🔍 ANÁLISIS DE CONSISTENCIA:")
 
         # Verificar duplicados en nutrition_plan_meals
         cursor.execute("""
@@ -136,7 +136,7 @@ def debug_plan_data(db_path=None):
             print("✅ Todas las comidas tienen alimentos válidos")
 
         # Sugerir una consulta de prueba
-        print(f"\n💡 CONSULTA DE PRUEBA:")
+        print("\n💡 CONSULTA DE PRUEBA:")
         print("Para reproducir el problema manualmente, ejecuta:")
         print(f"SELECT COUNT(*) FROM nutrition_plan_meals WHERE plan_id = {most_recent_plan_id};")
 

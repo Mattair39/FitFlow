@@ -3,15 +3,12 @@ from __future__ import annotations
 from datetime import date
 
 import pytest
-from jose import jwt
-from pydantic import ValidationError
-
+from fitFlow.backend.app.core import security
 from fitFlow.backend.app.core.security import (
     ALGORITHM,
     SECRET_KEY,
     create_access_token,
 )
-from fitFlow.backend.app.core import security
 from fitFlow.backend.app.models.nutrition_plan_meal import MealType
 from fitFlow.backend.app.schemas.admin import AdminCreate
 from fitFlow.backend.app.schemas.client import ActivityLevel, ClientCreate, Goal, Sex
@@ -21,7 +18,8 @@ from fitFlow.backend.app.schemas.nutrition_plan import NutritionPlanCreate, Nutr
 from fitFlow.backend.app.schemas.nutritionist import EspecialidadNutricionista, NutritionistCreate
 from fitFlow.backend.app.schemas.user import UserBase, UserLogin, UserOut
 from fitFlow.backend.app.schemas.validators import validate_ecuadorian_cedula
-
+from jose import jwt
+from pydantic import ValidationError
 
 VALID_CEDULA = "1710034065"
 VALID_PASSWORD = "Strong1@"

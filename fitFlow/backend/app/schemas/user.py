@@ -1,8 +1,9 @@
-from pydantic import BaseModel, EmailStr, validator
-from datetime import date
-from typing import Optional
 import enum
 import re
+from datetime import date
+
+from pydantic import BaseModel, EmailStr, validator
+
 
 class Sex(str, enum.Enum):
     Masculino = "Masculino"
@@ -38,7 +39,7 @@ class UserOut(BaseModel):
     email: str
     birth_date: date
     sex: Sex
-    role: Optional[str]
+    role: str | None
 
     class Config:
         from_attributes = True

@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
 from datetime import date
+from typing import Any
+
 from fitFlow.backend.app.models.client import Client
 from fitFlow.backend.app.services.nutrition_calculator import INutritionCalculator
+
 
 # Implementacion del FACTORY PATTERN con una interfaz para los distintos generadores de planes
 class IPlanGenerator(ABC):
     """Interface para diferentes generadores de planes"""
     @abstractmethod
-    def generate_plan(self, client: Client, target_date: date) -> Dict[str, Any]:
+    def generate_plan(self, client: Client, target_date: date) -> dict[str, Any]:
         pass
 
 # Generador Simple
@@ -17,7 +19,7 @@ class SimplePlanGenerator(IPlanGenerator):
     def __init__(self, calculator: INutritionCalculator):
         self.calculator = calculator
 
-    def generate_plan(self, client: Client, target_date: date) -> Dict[str, Any]:
+    def generate_plan(self, client: Client, target_date: date) -> dict[str, Any]:
         requirements = self.calculator.calculate_daily_requirements(client)
         target_calories = requirements['target_calories']
 
@@ -53,7 +55,7 @@ class SportPlanGenerator(IPlanGenerator):
     def __init__(self, calculator: INutritionCalculator):
         self.calculator = calculator
 
-    def generate_plan(self, client: Client, target_date: date) -> Dict[str, Any]:
+    def generate_plan(self, client: Client, target_date: date) -> dict[str, Any]:
         """Genera un plan optimizado para deportistas"""
         requirements = self.calculator.calculate_daily_requirements(client)
         target_calories = requirements['target_calories']
@@ -115,7 +117,7 @@ class NutritionPlanFactory:
         generator_class = self._generators[plan_type]
         return generator_class(calculator)
 
-    def get_available_types(self) -> List[Dict[str, str]]:
+    def get_available_types(self) -> list[dict[str, str]]:
         """Retorna los tipos de planes disponibles"""
         return [
             {

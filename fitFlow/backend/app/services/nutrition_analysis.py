@@ -1,6 +1,8 @@
-from typing import Dict, Any, List
+from typing import Any
+
 from fitFlow.backend.app.models.client import Client
 from fitFlow.backend.app.services.nutrition_calculator import INutritionCalculator
+
 
 # Este servicio tiene UNA SOLA responsabilidad: analizar la situación nutricional del cliente
 class NutritionAnalysisService:
@@ -12,7 +14,7 @@ class NutritionAnalysisService:
     def __init__(self, calculator: INutritionCalculator):
         self.calculator = calculator
 
-    def analyze_client_nutrition(self, client: Client) -> Dict[str, Any]:
+    def analyze_client_nutrition(self, client: Client) -> dict[str, Any]:
         return {
             'daily_requirements': self.calculator.calculate_daily_requirements(client),
             'macronutrient_targets': self.calculator.calculate_macronutrients(client),
@@ -21,7 +23,7 @@ class NutritionAnalysisService:
             'recommendations': self._generate_recommendations(client)
         }
 
-    def _analyze_bmi(self, client: Client) -> Dict[str, Any]:
+    def _analyze_bmi(self, client: Client) -> dict[str, Any]:
         bmi = client.calculate_bmi()
         category = client.get_bmi_category()
 
@@ -33,7 +35,7 @@ class NutritionAnalysisService:
             'recommendations': self._get_bmi_recommendations(bmi)
         }
 
-    def _analyze_goal_feasibility(self, client: Client) -> Dict[str, Any]:
+    def _analyze_goal_feasibility(self, client: Client) -> dict[str, Any]:
         weeks_to_goal = client.estimate_weeks_to_goal()
         weight_change = client.calculate_weight_change_needed()
 
@@ -45,7 +47,7 @@ class NutritionAnalysisService:
             'recommended_rate': self._get_recommended_rate(client.goal.value)
         }
 
-    def _generate_recommendations(self, client: Client) -> List[str]:
+    def _generate_recommendations(self, client: Client) -> list[str]:
         recommendations = []
 
         # Recomendaciones por objetivo
@@ -97,7 +99,7 @@ class NutritionAnalysisService:
         else:
             return "obesidad"
 
-    def _get_bmi_recommendations(self, bmi: float) -> List[str]:
+    def _get_bmi_recommendations(self, bmi: float) -> list[str]:
         """Recomendaciones específicas según IMC"""
         if bmi < 18.5:
             return [

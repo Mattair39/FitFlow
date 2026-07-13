@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import date
 
 import pytest
-
 from fitFlow.backend.app.models.client import ActivityLevel, Goal
 from fitFlow.backend.app.models.user import Sex
 from fitFlow.backend.app.services.nutrition_analysis import NutritionAnalysisService

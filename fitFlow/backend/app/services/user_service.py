@@ -1,8 +1,9 @@
-from sqlalchemy.orm import Session
-from fitFlow.backend.app.models.user import User
-from fitFlow.backend.app.core.security import get_password_hash
-from fitFlow.backend.app.schemas.user import UserCreate, Goal
 from fastapi import HTTPException
+from fitFlow.backend.app.core.security import get_password_hash
+from fitFlow.backend.app.models.user import User
+from fitFlow.backend.app.schemas.user import Goal, UserCreate
+from sqlalchemy.orm import Session
+
 
 def register_user(user: UserCreate, db: Session):
     existing_user = db.query(User).filter(User.cedula == user.cedula).first()

@@ -1,21 +1,22 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+
 from fitFlow.backend.app.models.client import Client
+
 
 # Aqui uso STRATEGY PATTERN para crear una unica Interface para diferentes estrategias de cálculo nutricional
 class INutritionCalculator(ABC):
     @abstractmethod
-    def calculate_daily_requirements(self, client: Client) -> Dict[str, float]:
+    def calculate_daily_requirements(self, client: Client) -> dict[str, float]:
         pass
 
     @abstractmethod
-    def calculate_macronutrients(self, client: Client) -> Dict[str, float]:
+    def calculate_macronutrients(self, client: Client) -> dict[str, float]:
         pass
 
 # Calculadora Estándar
 class StandardNutritionCalculator(INutritionCalculator):
     """Calculadora estándar usando fórmulas tradicionales (Mifflin-St Jeor)"""
-    def calculate_daily_requirements(self, client: Client) -> Dict[str, float]:
+    def calculate_daily_requirements(self, client: Client) -> dict[str, float]:
         bmr = self._calculate_bmr(client)
         tdee = self._calculate_tdee(bmr, client.activity_level)
         rcde = self._adjust_for_goal(tdee, client.goal)
@@ -27,7 +28,7 @@ class StandardNutritionCalculator(INutritionCalculator):
             'target_calories': round(rcde, 1)
         }
 
-    def calculate_macronutrients(self, client: Client) -> Dict[str, float]:
+    def calculate_macronutrients(self, client: Client) -> dict[str, float]:
         rcde = client.calculate_RCDE()
 
         # Distribución estándar
@@ -71,7 +72,7 @@ class StandardNutritionCalculator(INutritionCalculator):
 
 # Calculadora para Deportistas
 class SportNutritionCalculator(INutritionCalculator):
-    def calculate_daily_requirements(self, client: Client) -> Dict[str, float]:
+    def calculate_daily_requirements(self, client: Client) -> dict[str, float]:
         bmr = self._calculate_bmr_katch_mcardle(client)
         tdee = self._calculate_tdee_sport(bmr, client.activity_level)
         rcde = self._adjust_for_sport_goal(tdee, client.goal)
@@ -83,7 +84,7 @@ class SportNutritionCalculator(INutritionCalculator):
             'target_calories': round(rcde, 1)
         }
 
-    def calculate_macronutrients(self, client: Client) -> Dict[str, float]:
+    def calculate_macronutrients(self, client: Client) -> dict[str, float]:
         rcde = client.calculate_RCDE()
 
         # Macros optimizados para deportistas

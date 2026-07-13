@@ -1,16 +1,11 @@
-from pydantic import BaseModel
-from datetime import date
-from typing import Optional
 import enum
-from pydantic import BaseModel, EmailStr, validator
-from datetime import date
 import re
+from datetime import date
+
 from fitFlow.backend.app.schemas.user import Sex
 from fitFlow.backend.app.schemas.validators import validate_ecuadorian_cedula
+from pydantic import BaseModel, validator
 
-class Sex(str, enum.Enum):
-    Masculino = "Masculino"
-    Femenino = "Femenino"
 
 class ActivityLevel(str, enum.Enum):
     Sedentario = "Sedentario"
@@ -69,10 +64,10 @@ class ClientOut(BaseModel):
     weight_goal_kg: float
     activity_level: ActivityLevel
     goal: Goal
-    age: Optional[int]
-    metabolismo_basal: Optional[float]
-    get: Optional[float]
-    rcde: Optional[float]
+    age: int | None
+    metabolismo_basal: float | None
+    get: float | None
+    rcde: float | None
 
 
     class Config:

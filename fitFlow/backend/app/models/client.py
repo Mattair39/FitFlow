@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, Float, Enum, ForeignKey
-from sqlalchemy.orm import relationship
-from fitFlow.backend.app.database.session import Base
-from datetime import date
 import enum
+from datetime import date
+
+from fitFlow.backend.app.database.session import Base
+from sqlalchemy import Column, Enum, Float, ForeignKey, Integer
+from sqlalchemy.orm import relationship
 
 
 class ActivityLevel(enum.Enum):

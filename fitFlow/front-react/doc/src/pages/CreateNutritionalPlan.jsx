@@ -179,21 +179,6 @@ export default function CreateNutritionalPlan() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // DEBUG: Imprimir los valores antes de enviar
-console.log("=== DEBUGGING PLAN CREATION ===");
-console.log("Form completo:", form);
-form.meals.forEach((meal, i) => {
-  console.log(`Comida ${i+1}:`, {
-    meal_type: meal.meal_type,
-    food_id: meal.food_id,
-    portion_size_original: meal.portion_size,
-    portion_size_type: typeof meal.portion_size,
-    portion_size_parsed: parseFloat(meal.portion_size)
-  });
-});
-
-const jsonBody = JSON.stringify(form);
-console.log("JSON que se enviará:", jsonBody);
 
   const handleSubmit = async () => {
     if (!validateForm()) return;

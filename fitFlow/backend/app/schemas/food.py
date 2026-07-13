@@ -1,9 +1,10 @@
-from pydantic import BaseModel, constr, confloat
-from typing import Optional
+
+from pydantic import BaseModel, confloat, constr
+
 
 class FoodCreate(BaseModel):
     name: constr(min_length=2, max_length=100)
-    description: Optional[constr(max_length=255)] = None
+    description: constr(max_length=255) | None = None
     calories_per_portion: confloat(gt=0)
     protein_per_portion: confloat(ge=0)
     fat_per_portion: confloat(ge=0)

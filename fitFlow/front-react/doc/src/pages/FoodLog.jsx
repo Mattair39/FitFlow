@@ -67,7 +67,6 @@ export default function FoodLog() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Plan status recibido (con timestamp):', data);
         setPlanStatus(data);
       } else {
         setPlanStatus(null);
@@ -80,24 +79,15 @@ export default function FoodLog() {
 
   // MEJORADO: FunciÃ³n para actualizar entries con datos ya consumidos
   const updateEntriesWithConsumedData = useCallback(() => {
-    console.log('INICIO updateEntriesWithConsumedData');
-
     if (!planForDate || !planForDate.meals) {
-      console.log('No hay planForDate o meals');
       return;
     }
 
     if (!planStatus || !planStatus.detail) {
-      console.log('No hay planStatus o detail');
       return;
     }
 
-    console.log('Plan meals:', planForDate.meals);
-    console.log('Status detail:', planStatus.detail);
-
-    const updatedEntries = planForDate.meals.map((meal, index) => {
-      console.log(`Procesando meal ${index}:`, meal);
-
+    const updatedEntries = planForDate.meals.map((meal) => {
       // Buscar el estado actual de esta comida en planStatus con diferentes estrategias
       let statusDetail = null;
 
@@ -123,11 +113,6 @@ export default function FoodLog() {
 
       const consumedPortion = statusDetail ? statusDetail.consumed_portion : 0;
 
-      console.log(`Resultado para ${meal.meal_type} - ${meal.food_name}:`);
-      console.log(`  Planificado: ${meal.portion_size}`);
-      console.log(`  Consumido: ${consumedPortion}`);
-      console.log(`  Status encontrado:`, !!statusDetail);
-
       return {
         food_id: meal.food_id,
         meal_type: meal.meal_type,
@@ -138,7 +123,6 @@ export default function FoodLog() {
       };
     });
 
-    console.log('Entries actualizados:', updatedEntries);
     setEntries(updatedEntries);
   }, [planForDate, planStatus]);
 
@@ -155,12 +139,8 @@ export default function FoodLog() {
 
   // MEJORADO: Efecto para actualizar entries cuando cambia el planStatus
   useEffect(() => {
-    console.log('useEffect disparado - planForDate:', !!planForDate, 'planStatus:', !!planStatus);
     if (planForDate && planStatus && planStatus.detail) {
-      console.log('Condiciones cumplidas, ejecutando updateEntriesWithConsumedData...');
       updateEntriesWithConsumedData();
-    } else {
-      console.log('Condiciones NO cumplidas para actualizar entries');
     }
   }, [planForDate, planStatus, updateEntriesWithConsumedData]);
 
@@ -310,26 +290,22 @@ export default function FoodLog() {
         setMessage(`${validEntries.length} registros guardados correctamente para ${selectedDate}`);
 
         // Actualizar el estado del plan con mÃºltiples estrategias
-        console.log('Registro exitoso, actualizando estado...');
 
         // Estrategia 1: ActualizaciÃ³n inmediata
         await fetchPlanStatus();
 
         // Estrategia 2: ActualizaciÃ³n con delay mayor
         setTimeout(async () => {
-          console.log('Segunda actualizaciÃ³n (500ms delay)...');
           await fetchPlanStatus();
 
           // Estrategia 3: Forzar actualizaciÃ³n manual
           setTimeout(() => {
-            console.log('Tercera actualizaciÃ³n manual...');
             updateEntriesWithConsumedData();
           }, 200);
         }, 500);
 
         // Estrategia 4: ActualizaciÃ³n final con delay largo
         setTimeout(async () => {
-          console.log('ActualizaciÃ³n final (1000ms delay)...');
           await fetchPlanStatus();
         }, 1000);
 

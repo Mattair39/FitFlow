@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from fitFlow.backend.app.models.client import ActivityLevel, Goal
 from fitFlow.backend.app.models.user import Sex
 

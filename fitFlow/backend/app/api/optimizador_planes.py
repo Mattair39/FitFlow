@@ -1,15 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
 import random
-from typing import List, Dict
-from pydantic import BaseModel
 from datetime import date
+
+from fastapi import APIRouter, Depends, HTTPException
+from fitFlow.backend.app.api.auth import User, get_current_user
 from fitFlow.backend.app.database.session import get_db
-from fitFlow.backend.app.models.food import Food
 from fitFlow.backend.app.models.client import Client
+from fitFlow.backend.app.models.food import Food
 from fitFlow.backend.app.models.nutrition_plan import NutritionPlan
-from fitFlow.backend.app.api.auth import get_current_user, User
+from pydantic import BaseModel
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/nutrition-optimizer", tags=["NutritionOptimizer"])
 

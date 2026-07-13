@@ -5,7 +5,6 @@ from types import SimpleNamespace
 
 import pytest
 from fastapi import HTTPException
-
 from fitFlow.backend.app.models.admin import Admin
 from fitFlow.backend.app.models.food import Food
 from fitFlow.backend.app.models.food_log import FoodLog

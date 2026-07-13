@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import date
 
 import pytest
-
 from fitFlow.backend.app.models import admin as _admin
 from fitFlow.backend.app.models import food as _food
 from fitFlow.backend.app.models import food_log as _food_log
