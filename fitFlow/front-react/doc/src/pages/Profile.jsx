@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -113,15 +113,7 @@ export default function Profile() {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user?.role === 'Cliente' && token) {
-      fetchMetrics();
-    } else {
-      setLoading(false);
-    }
-  }, [user, token]);
-
-  const fetchMetrics = async () => {
+  const fetchMetrics = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:8000/dashboard/nutrition-metrics', {
         headers: { Authorization: `Bearer ${token}` }
@@ -135,7 +127,15 @@ export default function Profile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (user?.role === 'Cliente' && token) {
+      fetchMetrics();
+    } else {
+      setLoading(false);
+    }
+  }, [fetchMetrics, token, user?.role]);
 
   if (!user) {
     return (

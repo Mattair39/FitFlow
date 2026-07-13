@@ -1,0 +1,53 @@
+[tool.pytest.ini_options]
+testpaths = ["tests/backend"]
+pythonpath = [".."]
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--strict-config",
+  "--junitxml=reports/backend/junit.xml",
+  "--cov=backend/app/core",
+  "--cov=backend/app/models",
+  "--cov=backend/app/schemas",
+  "--cov=backend/app/services",
+  "--cov-branch",
+  "--cov-report=term-missing",
+  "--cov-report=html:reports/backend/coverage-html",
+  "--cov-report=xml:reports/backend/coverage.xml",
+  "--cov-report=json:reports/backend/coverage.json",
+  "--cov-fail-under=90"
+]
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+omit = [
+  "*/__pycache__/*",
+  "*/tests/*"
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 90
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+  "@abstractmethod"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = [
+  ".git",
+  "__pycache__",
+  "reports",
+  "front-react/doc/node_modules",
+  "front-react/doc/dist"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501"]

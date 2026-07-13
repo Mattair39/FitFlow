@@ -141,7 +141,7 @@ export default function RegisterNutritionist() {
           severity: 'error'
         });
       }
-    } catch (err) {
+    } catch {
       setSnackbar({
         open: true,
         message: 'Error de conexión con el servidor.',
@@ -211,7 +211,7 @@ export default function RegisterNutritionist() {
             name="birth_date"
             label="Fecha Nacimiento"
             type="date"
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             value={form.birth_date}
             onChange={handleChange}
             error={!!errors.birth_date}

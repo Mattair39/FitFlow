@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 export default function CreateNutritionalPlan() {
@@ -18,18 +18,7 @@ export default function CreateNutritionalPlan() {
   const [checkingExisting, setCheckingExisting] = useState(false);
   const [generatingAI, setGeneratingAI] = useState(false);
 
-  useEffect(() => {
-    fetchInitialData();
-  }, [token]);
-
-  useEffect(() => {
-    // Verificar si ya existe un plan para la fecha seleccionada
-    if (form.user_id && form.plan_date) {
-      checkExistingPlan();
-    }
-  }, [form.user_id, form.plan_date]);
-
-  const fetchInitialData = async () => {
+  const fetchInitialData = useCallback(async () => {
     try {
       const [foodsRes, clientsRes] = await Promise.all([
         fetch("http://localhost:8000/foods", { headers: { Authorization: `Bearer ${token}` } }),
@@ -48,9 +37,9 @@ export default function CreateNutritionalPlan() {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  };
+  }, [token]);
 
-  const checkExistingPlan = async () => {
+  const checkExistingPlan = useCallback(async () => {
     if (!form.user_id || !form.plan_date) return;
 
     setCheckingExisting(true);
@@ -70,7 +59,18 @@ export default function CreateNutritionalPlan() {
     } finally {
       setCheckingExisting(false);
     }
-  };
+  }, [form.plan_date, form.user_id, token]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  useEffect(() => {
+    // Verificar si ya existe un plan para la fecha seleccionada
+    if (form.user_id && form.plan_date) {
+      checkExistingPlan();
+    }
+  }, [checkExistingPlan, form.user_id, form.plan_date]);
 
   const addMeal = () => {
     setForm({

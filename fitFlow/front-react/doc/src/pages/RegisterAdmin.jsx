@@ -113,7 +113,7 @@ export default function RegisterAdmin() {
           severity: 'error'
         });
       }
-    } catch (err) {
+    } catch {
       setSnackbar({
         open: true,
         message: 'Error de conexión con el servidor.',
@@ -149,7 +149,7 @@ export default function RegisterAdmin() {
               helperText={errors[f.name]}
               fullWidth
               sx={{ mb: 2 }}
-              InputLabelProps={f.type === 'date' ? { shrink: true } : {}}
+              slotProps={f.type === 'date' ? { inputLabel: { shrink: true } } : {}}
             />
           ))}
           <Button variant="contained" color="primary" fullWidth onClick={onSubmit}>

@@ -21,7 +21,7 @@ export default function Admins() {
       </Typography>
       <Grid container spacing={2}>
         {admins.map(a => (
-          <Grid item xs={12} md={4} key={a.user_id}>
+          <Grid size={{ xs: 12, md: 4 }} key={a.user_id}>
             <Card>
               <CardContent>
                 <Typography variant="h6">{a.first_name} {a.last_name}</Typography>

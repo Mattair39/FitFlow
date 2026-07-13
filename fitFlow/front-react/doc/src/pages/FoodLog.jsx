@@ -1,39 +1,17 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 export default function FoodLog() {
-  const { token, user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [planForDate, setPlanForDate] = useState(null);
   const [planStatus, setPlanStatus] = useState(null);
-  const [foods, setFoods] = useState([]);
+  const [, setFoods] = useState([]);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    fetchFoods();
-  }, []);
-
-  useEffect(() => {
-    if (selectedDate) {
-      fetchPlanForDate();
-      fetchPlanStatus();
-    }
-  }, [selectedDate]);
-
-  // MEJORADO: Efecto para actualizar entries cuando cambia el planStatus
-  useEffect(() => {
-    console.log('useEffect disparado - planForDate:', !!planForDate, 'planStatus:', !!planStatus);
-    if (planForDate && planStatus && planStatus.detail) {
-      console.log('Condiciones cumplidas, ejecutando updateEntriesWithConsumedData...');
-      updateEntriesWithConsumedData();
-    } else {
-      console.log('Condiciones NO cumplidas para actualizar entries');
-    }
-  }, [planForDate, planStatus]);
-
-  const fetchFoods = async () => {
+  const fetchFoods = useCallback(async () => {
     try {
       const response = await fetch("http://localhost:8000/foods", {
         headers: { Authorization: `Bearer ${token}` }
@@ -45,9 +23,9 @@ export default function FoodLog() {
     } catch (error) {
       console.error('Error fetching foods:', error);
     }
-  };
+  }, [token]);
 
-  const fetchPlanForDate = async () => {
+  const fetchPlanForDate = useCallback(async () => {
     if (!selectedDate) return;
 
     try {
@@ -68,9 +46,9 @@ export default function FoodLog() {
       setPlanForDate(null);
       setEntries([]);
     }
-  };
+  }, [selectedDate, token]);
 
-  const fetchPlanStatus = async () => {
+  const fetchPlanStatus = useCallback(async () => {
     if (!selectedDate) return;
 
     try {
@@ -98,10 +76,10 @@ export default function FoodLog() {
       console.error('Error fetching plan status:', error);
       setPlanStatus(null);
     }
-  };
+  }, [selectedDate, token]);
 
-  // MEJORADO: Función para actualizar entries con datos ya consumidos
-  const updateEntriesWithConsumedData = () => {
+  // MEJORADO: FunciÃ³n para actualizar entries con datos ya consumidos
+  const updateEntriesWithConsumedData = useCallback(() => {
     console.log('INICIO updateEntriesWithConsumedData');
 
     if (!planForDate || !planForDate.meals) {
@@ -162,12 +140,34 @@ export default function FoodLog() {
 
     console.log('Entries actualizados:', updatedEntries);
     setEntries(updatedEntries);
-  };
+  }, [planForDate, planStatus]);
+
+  useEffect(() => {
+    fetchFoods();
+  }, [fetchFoods]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchPlanForDate();
+      fetchPlanStatus();
+    }
+  }, [fetchPlanForDate, fetchPlanStatus, selectedDate]);
+
+  // MEJORADO: Efecto para actualizar entries cuando cambia el planStatus
+  useEffect(() => {
+    console.log('useEffect disparado - planForDate:', !!planForDate, 'planStatus:', !!planStatus);
+    if (planForDate && planStatus && planStatus.detail) {
+      console.log('Condiciones cumplidas, ejecutando updateEntriesWithConsumedData...');
+      updateEntriesWithConsumedData();
+    } else {
+      console.log('Condiciones NO cumplidas para actualizar entries');
+    }
+  }, [planForDate, planStatus, updateEntriesWithConsumedData]);
 
   const deletePlan = async (planId, planName, force = false) => {
     const confirmMessage = force
-      ? `¿Estás seguro de que quieres eliminar "${planName}" del ${selectedDate} y TODOS sus registros asociados?`
-      : `¿Estás seguro de que quieres eliminar "${planName}" del ${selectedDate}?`;
+      ? `Â¿EstÃ¡s seguro de que quieres eliminar "${planName}" del ${selectedDate} y TODOS sus registros asociados?`
+      : `Â¿EstÃ¡s seguro de que quieres eliminar "${planName}" del ${selectedDate}?`;
 
     if (!confirm(confirmMessage)) return;
 
@@ -189,7 +189,7 @@ export default function FoodLog() {
         fetchPlanStatus();
       } else if (response.status === 400 && !force) {
         const forceDelete = confirm(
-          `${responseData.detail}\n\n¿Quieres eliminar el plan junto con todos sus registros?`
+          `${responseData.detail}\n\nÂ¿Quieres eliminar el plan junto con todos sus registros?`
         );
         if (forceDelete) {
           deletePlan(planId, planName, true);
@@ -199,7 +199,7 @@ export default function FoodLog() {
       }
     } catch (error) {
       console.error('Error deleting plan:', error);
-      setMessage("Error de conexión al eliminar el plan");
+      setMessage("Error de conexiÃ³n al eliminar el plan");
     }
   };
 
@@ -209,7 +209,7 @@ export default function FoodLog() {
     setEntries(updated);
   };
 
-  // MEJORADO: Validación que considera lo ya consumido con tolerancia para decimales
+  // MEJORADO: ValidaciÃ³n que considera lo ya consumido con tolerancia para decimales
   const validatePortionSize = (entryIndex, inputValue) => {
     if (!inputValue || inputValue === "") return null;
 
@@ -219,22 +219,22 @@ export default function FoodLog() {
     const inputPortion = parseFloat(inputValue);
 
     if (isNaN(inputPortion) || inputPortion < 0) {
-      return "Ingresa un número válido mayor o igual a 0";
+      return "Ingresa un nÃºmero vÃ¡lido mayor o igual a 0";
     }
 
-    // NUEVA VALIDACIÓN: Verificar que la suma no exceda lo planificado con tolerancia decimal
+    // NUEVA VALIDACIÃ“N: Verificar que la suma no exceda lo planificado con tolerancia decimal
     const totalAfterInput = alreadyConsumed + inputPortion;
-    const tolerance = 0.001; // Tolerancia para errores de precisión de punto flotante
+    const tolerance = 0.001; // Tolerancia para errores de precisiÃ³n de punto flotante
 
     if (totalAfterInput > plannedPortion + tolerance) {
       const remaining = Math.round((plannedPortion - alreadyConsumed) * 1000) / 1000; // Redondear a 3 decimales
-      return `Solo puedes agregar ${remaining} más (ya consumiste ${alreadyConsumed}, planificado: ${plannedPortion})`;
+      return `Solo puedes agregar ${remaining} mÃ¡s (ya consumiste ${alreadyConsumed}, planificado: ${plannedPortion})`;
     }
 
-    return null; // Válido
+    return null; // VÃ¡lido
   };
 
-  // Función para calcular el restante disponible con precisión
+  // FunciÃ³n para calcular el restante disponible con precisiÃ³n
   const getRemainingPortion = (entry) => {
     const planned = parseFloat(entry.planned_portion);
     const consumed = parseFloat(entry.consumed_portion || 0);
@@ -243,13 +243,6 @@ export default function FoodLog() {
     return Math.max(0, Math.round(remaining * 1000) / 1000);
   };
 
-  const getPortionStatus = (planned, consumed) => {
-    if (consumed === 0) return "pendiente";
-    const percentage = (consumed / planned) * 100;
-    if (percentage >= 80 && percentage <= 120) return "completo";
-    if (percentage > 0) return "parcial";
-    return "pendiente";
-  };
 
   const getPortionDisplay = (planned, consumed) => {
     if (consumed === 0) return `0/${planned}`;
@@ -284,12 +277,12 @@ export default function FoodLog() {
     });
 
     if (validationErrors.length > 0) {
-      setMessage(`Errores de validación:\n${validationErrors.join('\n')}`);
+      setMessage(`Errores de validaciÃ³n:\n${validationErrors.join('\n')}`);
       return;
     }
 
     if (validEntries.length === 0) {
-      setMessage("Ingresa al menos una porción válida para registrar.");
+      setMessage("Ingresa al menos una porciÃ³n vÃ¡lida para registrar.");
       return;
     }
 
@@ -316,27 +309,27 @@ export default function FoodLog() {
       if (response.ok) {
         setMessage(`${validEntries.length} registros guardados correctamente para ${selectedDate}`);
 
-        // Actualizar el estado del plan con múltiples estrategias
+        // Actualizar el estado del plan con mÃºltiples estrategias
         console.log('Registro exitoso, actualizando estado...');
 
-        // Estrategia 1: Actualización inmediata
+        // Estrategia 1: ActualizaciÃ³n inmediata
         await fetchPlanStatus();
 
-        // Estrategia 2: Actualización con delay mayor
+        // Estrategia 2: ActualizaciÃ³n con delay mayor
         setTimeout(async () => {
-          console.log('Segunda actualización (500ms delay)...');
+          console.log('Segunda actualizaciÃ³n (500ms delay)...');
           await fetchPlanStatus();
 
-          // Estrategia 3: Forzar actualización manual
+          // Estrategia 3: Forzar actualizaciÃ³n manual
           setTimeout(() => {
-            console.log('Tercera actualización manual...');
+            console.log('Tercera actualizaciÃ³n manual...');
             updateEntriesWithConsumedData();
           }, 200);
         }, 500);
 
-        // Estrategia 4: Actualización final con delay largo
+        // Estrategia 4: ActualizaciÃ³n final con delay largo
         setTimeout(async () => {
-          console.log('Actualización final (1000ms delay)...');
+          console.log('ActualizaciÃ³n final (1000ms delay)...');
           await fetchPlanStatus();
         }, 1000);
 
@@ -352,7 +345,7 @@ export default function FoodLog() {
       }
     } catch (error) {
       console.error('Error saving entries:', error);
-      setMessage("Error de conexión al guardar registros");
+      setMessage("Error de conexiÃ³n al guardar registros");
     } finally {
       setLoading(false);
     }
@@ -366,9 +359,9 @@ export default function FoodLog() {
 
   const getComplianceText = (status) => {
     switch (status) {
-      case 'completo': return '✓ Completo';
-      case 'parcial': return '◐ Parcial';
-      case 'pendiente': return '○ Pendiente';
+      case 'completo': return 'âœ“ Completo';
+      case 'parcial': return 'â— Parcial';
+      case 'pendiente': return 'â—‹ Pendiente';
       default: return status;
     }
   };
@@ -449,7 +442,7 @@ export default function FoodLog() {
                 marginTop: '0.25rem',
                 fontWeight: '500'
               }}>
-                ⚠️ No puedes registrar comidas para fechas futuras
+                &#9888;&#65039; No puedes registrar comidas para fechas futuras
               </div>
             )}
           </div>
@@ -698,7 +691,7 @@ export default function FoodLog() {
                     {entry.food_name}
                   </div>
 
-                  {/* Mostrar información del consumo actual */}
+                  {/* Mostrar informaciÃ³n del consumo actual */}
                   {alreadyConsumed > 0 && (
                     <div style={{
                       backgroundColor: '#e8f5e8',
@@ -708,7 +701,7 @@ export default function FoodLog() {
                       fontSize: '0.875rem'
                     }}>
                       <div style={{ color: '#155724' }}>
-                        ✓ Ya consumiste: {Math.round(alreadyConsumed * 1000) / 1000}
+                        âœ“ Ya consumiste: {Math.round(alreadyConsumed * 1000) / 1000}
                       </div>
                       <div style={{ color: '#6c757d' }}>
                         Restante disponible: {remainingPortion}
@@ -721,7 +714,7 @@ export default function FoodLog() {
                     step="0.001"
                     min="0"
                     max={remainingPortion}
-                    placeholder={`Porción a agregar (máximo: ${remainingPortion})`}
+                    placeholder={`PorciÃ³n a agregar (mÃ¡ximo: ${remainingPortion})`}
                     value={entry.portion_size}
                     onChange={(e) => handleEntryChange(index, 'portion_size', e.target.value)}
                     disabled={isFutureDate() || remainingPortion <= 0.001}
@@ -743,7 +736,7 @@ export default function FoodLog() {
                       marginTop: '0.25rem',
                       fontWeight: '500'
                     }}>
-                      ✓ Plan completado para esta comida
+                      âœ“ Plan completado para esta comida
                     </div>
                   )}
 

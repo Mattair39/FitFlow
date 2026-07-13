@@ -3,8 +3,10 @@ import {
   Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button,
   FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
-import { useState, useEffect, useContext } from 'react';
+import Add from '@mui/icons-material/Add';
+import Delete from '@mui/icons-material/Delete';
+import Edit from '@mui/icons-material/Edit';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Foods() {
@@ -17,15 +19,15 @@ export default function Foods() {
     fat_per_portion: "", carbs_per_portion: "", portion_unit: ""
   });
 
-  const fetchFoods = () => {
+  const fetchFoods = useCallback(() => {
     fetch("http://localhost:8000/foods", {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
       .then(setFoods);
-  };
+  }, [token]);
 
-  useEffect(() => { fetchFoods(); }, [token]);
+  useEffect(() => { fetchFoods(); }, [fetchFoods]);
 
   const handleOpen = (food = null) => {
     if (food) setForm(food);
@@ -93,7 +95,7 @@ export default function Foods() {
 
       <Grid container spacing={2}>
         {foods.map(f => (
-          <Grid item xs={12} md={4} key={f.food_id}>
+          <Grid size={{ xs: 12, md: 4 }} key={f.food_id}>
             <Card>
               <CardContent>
                 <Typography variant="h6">{f.name}</Typography>

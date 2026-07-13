@@ -21,7 +21,7 @@ export default function Nutritionists() {
       </Typography>
       <Grid container spacing={2}>
         {nutritionists.map(n => (
-          <Grid item xs={12} md={4} key={n.user_id}>
+          <Grid size={{ xs: 12, md: 4 }} key={n.user_id}>
             <Card>
               <CardContent>
                 <Typography variant="h6">{n.first_name} {n.last_name}</Typography>

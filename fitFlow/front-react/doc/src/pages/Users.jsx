@@ -1,5 +1,6 @@
 import { Container, Typography, Grid, Card, CardContent, Chip, IconButton, Tooltip } from '@mui/material';
-import { Visibility, Edit, Delete } from '@mui/icons-material';
+import Delete from '@mui/icons-material/Delete';
+import Visibility from '@mui/icons-material/Visibility';
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +19,7 @@ export default function Users() {
   }, [token]);
 
   const handleDelete = async (userId) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este usuario?")) return;
+    if (!window.confirm("Â¿Seguro que deseas eliminar este usuario?")) return;
     const res = await fetch(`http://localhost:8000/auth/users/${userId}`, {
   method: 'DELETE',
   headers: { Authorization: `Bearer ${token}` }
@@ -36,22 +37,19 @@ export default function Users() {
     navigate(`/profile/${userId}`);
   };
 
-  const handleEdit = (userId) => {
-    navigate(`/edit-user/${userId}`);
-  };
 
   return (
     <Container sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Gestión de Usuarios
+        GestiÃ³n de Usuarios
       </Typography>
       <Grid container spacing={2}>
         {users.map(u => (
-          <Grid item xs={12} md={4} key={u.user_id}>
+          <Grid size={{ xs: 12, md: 4 }} key={u.user_id}>
             <Card>
               <CardContent>
                 <Typography variant="h6">{u.first_name} {u.last_name}</Typography>
-                <Typography>Cédula: {u.cedula}</Typography>
+                <Typography>CÃ©dula: {u.cedula}</Typography>
                 <Typography>Email: {u.email}</Typography>
                 <Chip label={u.role} sx={{ mt: 1 }} />
 

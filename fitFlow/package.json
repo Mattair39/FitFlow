@@ -7,7 +7,16 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "style:backend": "python scripts/run_backend_style.py",
+    "style:frontend": "npm --prefix front-react/doc run lint:report",
+    "style": "npm run style:backend && npm run style:frontend",
+    "test:backend": "python -m pytest",
+    "test:frontend": "npm --prefix front-react/doc run test:coverage",
+    "test": "npm run test:backend && npm run test:frontend",
+    "coverage:backend": "python -m pytest --cov",
+    "coverage:frontend": "npm --prefix front-react/doc run test:coverage",
+    "coverage": "npm run coverage:backend && npm run coverage:frontend",
+    "quality": "npm run style && npm run coverage"
   },
   "private": true,
   "dependencies": {

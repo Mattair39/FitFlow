@@ -1,8 +1,8 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 export default function MyPlans() {
-  const { token, user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const [plans, setPlans] = useState([]);
   const [weekOverview, setWeekOverview] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,15 +19,7 @@ export default function MyPlans() {
     monthYear: ""
   });
 
-  useEffect(() => {
-    if (viewMode === "week") {
-      fetchWeekOverview();
-    } else {
-      fetchPlans();
-    }
-  }, [token, viewMode, currentWeekOffset, filters]);
-
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -58,9 +50,9 @@ export default function MyPlans() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, token]);
 
-  const fetchWeekOverview = async () => {
+  const fetchWeekOverview = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(
@@ -80,7 +72,15 @@ export default function MyPlans() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentWeekOffset, token]);
+
+  useEffect(() => {
+    if (viewMode === "week") {
+      fetchWeekOverview();
+    } else {
+      fetchPlans();
+    }
+  }, [fetchPlans, fetchWeekOverview, viewMode]);
 
   const deletePlan = async (planId, planName, planDate, force = false) => {
     const confirmMessage = force
@@ -756,7 +756,7 @@ export default function MyPlans() {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }

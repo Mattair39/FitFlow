@@ -1,5 +1,5 @@
 // fitFlow/front-react/src/pages/EnhancedNutritionPlanner.jsx
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 export default function EnhancedNutritionPlanner() {
@@ -15,15 +15,7 @@ export default function EnhancedNutritionPlanner() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    fetchPlanTypes();
-    fetchCalculatorTypes();
-    if (user?.role === 'Cliente') {
-      fetchAnalysis();
-    }
-  }, [token, user]);
-
-  const fetchPlanTypes = async () => {
+  const fetchPlanTypes = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:8000/nutrition-enhanced/plan-types', {
         headers: { Authorization: `Bearer ${token}` }
@@ -35,9 +27,9 @@ export default function EnhancedNutritionPlanner() {
     } catch (error) {
       console.error('Error fetching plan types:', error);
     }
-  };
+  }, [token]);
 
-  const fetchCalculatorTypes = async () => {
+  const fetchCalculatorTypes = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:8000/nutrition-enhanced/calculator-types', {
         headers: { Authorization: `Bearer ${token}` }
@@ -49,9 +41,11 @@ export default function EnhancedNutritionPlanner() {
     } catch (error) {
       console.error('Error fetching calculator types:', error);
     }
-  };
+  }, [token]);
 
-  const fetchAnalysis = async (calcType = 'standard') => {
+  const fetchAnalysis = useCallback(async (calcType = 'standard') => {
+    if (!user?.user_id) return;
+
     try {
       const response = await fetch(
         `http://localhost:8000/nutrition-enhanced/client/${user.user_id}/analysis?calculator_type=${calcType}`,
@@ -64,7 +58,15 @@ export default function EnhancedNutritionPlanner() {
     } catch (error) {
       console.error('Error fetching analysis:', error);
     }
-  };
+  }, [token, user?.user_id]);
+
+  useEffect(() => {
+    fetchPlanTypes();
+    fetchCalculatorTypes();
+    if (user?.role === 'Cliente') {
+      fetchAnalysis();
+    }
+  }, [fetchAnalysis, fetchCalculatorTypes, fetchPlanTypes, user?.role]);
 
   const generatePlan = async () => {
     if (!user?.user_id) {
