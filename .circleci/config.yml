@@ -187,6 +187,22 @@ jobs:
       - run:
           name: Fail on Trivy findings
           command: exit "$(cat reports/security/trivy-exit-code.txt)"
+
+  build_and_scan_images:
+    executor: docker_executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install Trivy
+          command: bash fitFlow/scripts/ci/install_trivy.sh
+      - run:
+          name: Build and scan Docker images
+          command: bash fitFlow/scripts/ci/build_and_scan_images.sh
+      - store_artifacts:
+          path: reports/security/images
+          destination: security/images
+
 workflows:
   quality:
     jobs:
@@ -204,3 +220,6 @@ workflows:
             - backend_tests
             - frontend_tests
             - repository_security_scan
+      - build_and_scan_images:
+          requires:
+            - sonar_analysis
