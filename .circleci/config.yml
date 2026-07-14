@@ -99,7 +99,6 @@ jobs:
           paths:
             - fitFlow/reports/backend
 
-
   frontend_tests:
     executor: frontend_executor
     steps:
@@ -140,7 +139,9 @@ jobs:
           name: Scan repository with Trivy
           command: |
             mkdir -p reports/security
+
             set +e
+
             trivy fs \
               --scanners vuln,misconfig,secret \
               --severity HIGH,CRITICAL \
@@ -149,7 +150,9 @@ jobs:
               --output reports/security/trivy-repository.json \
               --exit-code 1 \
               .
+
             trivy_exit_code=$?
+
             set -e
 
             trivy fs \
@@ -202,15 +205,48 @@ jobs:
       - store_artifacts:
           path: reports/security/images
           destination: security/images
+      - run:
+          name: Publish Docker images
+          command: bash fitFlow/scripts/ci/publish_images.sh
 
 workflows:
   quality:
     jobs:
-      - backend_style
-      - frontend_style
-      - backend_tests
-      - frontend_tests
-      - repository_security_scan
+      - backend_style:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+
+      - frontend_style:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+
+      - backend_tests:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+
+      - frontend_tests:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+
+      - repository_security_scan:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+
       - sonar_analysis:
           context:
             - SonarCloud
@@ -220,6 +256,19 @@ workflows:
             - backend_tests
             - frontend_tests
             - repository_security_scan
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+
       - build_and_scan_images:
+          context:
+            - DockerHub
           requires:
             - sonar_analysis
+          filters:
+            branches:
+              only:
+                - develop
+                - master
