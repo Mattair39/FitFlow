@@ -198,6 +198,8 @@ describe('FoodLog', () => {
       .mockImplementationOnce(() => jsonResponse(plan))
       .mockImplementationOnce(() => jsonResponse(planStatus))
       .mockImplementationOnce(() => jsonResponse({}, true, 200))
+      .mockImplementationOnce(() => jsonResponse({ ...planStatus, fulfilled_count: 1 }))
+      .mockImplementationOnce(() => jsonResponse({ ...planStatus, fulfilled_count: 1 }))
       .mockImplementationOnce(() => jsonResponse({ ...planStatus, fulfilled_count: 1 }));
 
     renderWithProviders(<FoodLog />);
@@ -209,6 +211,7 @@ describe('FoodLog', () => {
     await userEvent.click(screen.getByRole('button', { name: /Guardar Registros/i }));
 
     await waitFor(() => expect(screen.getByText(/registros guardados/i)).toBeInTheDocument());
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalledTimes(7), { timeout: 1500 });
   });
 
   it('blocks invalid portions and future date submissions', async () => {
@@ -245,6 +248,53 @@ describe('FoodLog', () => {
     renderWithProviders(<FoodLog />);
 
     expect(await screen.findByText(/No hay plan para esta fecha/i)).toBeInTheDocument();
+  });
+
+  it('validates plan ids before deleting a plan', async () => {
+    const unsafePlan = { ...plan, plan_id: '../bad' };
+    const fetchMock = vi
+      .fn()
+      .mockImplementationOnce(() => jsonResponse([food]))
+      .mockImplementationOnce(() => jsonResponse(unsafePlan))
+      .mockImplementationOnce(() => jsonResponse(planStatus));
+    globalThis.fetch = fetchMock;
+
+    renderWithProviders(<FoodLog />);
+
+    expect((await screen.findAllByText(/Plan lunes/i)).length).toBeGreaterThan(0);
+    await userEvent.click(screen.getByRole('button', { name: /Eliminar Plan/i }));
+
+    expect(await screen.findByText(/plan inv/i)).toBeInTheDocument();
+    expect(globalThis.confirm).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('deletes plans using encoded safe urls', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementationOnce(() => jsonResponse([food]))
+      .mockImplementationOnce(() => jsonResponse(plan))
+      .mockImplementationOnce(() => jsonResponse(planStatus))
+      .mockImplementationOnce(() => jsonResponse({ detail: 'Tiene registros' }, false, 400))
+      .mockImplementationOnce(() => jsonResponse({ message: 'Plan eliminado' }))
+      .mockImplementationOnce(() => jsonResponse({ detail: 'not found' }, false, 404))
+      .mockImplementationOnce(() => jsonResponse({ detail: 'not found' }, false, 404));
+    globalThis.fetch = fetchMock;
+
+    renderWithProviders(<FoodLog />);
+
+    expect((await screen.findAllByText(/Plan lunes/i)).length).toBeGreaterThan(0);
+    await userEvent.click(screen.getByRole('button', { name: /Eliminar Plan/i }));
+
+    await waitFor(() => expect(screen.getByText(/Plan eliminado/i)).toBeInTheDocument());
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:8000/nutrition-plans/1',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:8000/nutrition-plans/1/force',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
   });
 });
 
