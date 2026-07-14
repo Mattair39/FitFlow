@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY fitFlow/requirements.txt /app/requirements.txt
 
+RUN pip install --no-cache-dir --upgrade setuptools==83.0.0 wheel==0.47.0
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY fitFlow /app/fitFlow
