@@ -90,7 +90,7 @@ jobs:
             cd ..
             python fitFlow/scripts/normalize_backend_coverage.py
       - store_test_results:
-          path: fitFlow/reports/backend
+          path: fitFlow/reports/backend/junit.xml
       - store_artifacts:
           path: fitFlow/reports/backend
           destination: backend-reports
