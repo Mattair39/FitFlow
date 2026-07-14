@@ -149,6 +149,7 @@ jobs:
           name: Scan repository with Trivy
           command: |
             mkdir -p reports/security
+            set +e
             trivy fs \
               --scanners vuln,misconfig,secret \
               --severity HIGH,CRITICAL \
@@ -157,9 +158,44 @@ jobs:
               --output reports/security/trivy-repository.json \
               --exit-code 1 \
               .
+            trivy_exit_code=$?
+            set -e
+
+            trivy fs \
+              --scanners vuln,misconfig,secret \
+              --severity HIGH,CRITICAL \
+              --ignore-unfixed \
+              --format table \
+              --output reports/security/trivy-repository-summary.txt \
+              --exit-code 0 \
+              . || echo "Trivy repository summary report could not be generated." > reports/security/trivy-repository-summary.txt
+
+            trivy config \
+              --severity HIGH,CRITICAL \
+              --format table \
+              --output reports/security/trivy-k8s-manifests.txt \
+              --exit-code 0 \
+              fitFlow/k8s || echo "Trivy Kubernetes manifest report could not be generated." > reports/security/trivy-k8s-manifests.txt
+
+            if [ -n "${KUBECONFIG:-}" ] || [ -f "${HOME}/.kube/config" ]; then
+              trivy k8s \
+                --report summary \
+                --scanners vuln,misconfig,secret \
+                --severity HIGH,CRITICAL \
+                --ignore-unfixed \
+                all > reports/security/trivy-k8s-summary.txt || \
+                echo "Trivy Kubernetes cluster summary report could not be generated." > reports/security/trivy-k8s-summary.txt
+            else
+              echo "Trivy Kubernetes cluster summary report was skipped because no KUBECONFIG is available in CI." > reports/security/trivy-k8s-summary.txt
+            fi
+
+            echo "${trivy_exit_code}" > reports/security/trivy-exit-code.txt
       - store_artifacts:
-          path: reports/security/trivy-repository.json
-          destination: security/trivy-repository.json
+          path: reports/security
+          destination: security
+      - run:
+          name: Fail on Trivy findings
+          command: exit "$(cat reports/security/trivy-exit-code.txt)"
 workflows:
   quality:
     jobs:
