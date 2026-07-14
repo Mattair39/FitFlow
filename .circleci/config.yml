@@ -123,11 +123,8 @@ jobs:
   sonar_analysis:
     executor: docker_executor
     steps:
-      - checkout
-      - run:
-          name: Fetch complete Git history
-          command: |
-            git fetch --unshallow --tags || git fetch --all --tags
+      - checkout:
+          method: full
       - attach_workspace:
           at: ~/project
       - sonarcloud/scan
