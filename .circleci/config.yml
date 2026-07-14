@@ -129,6 +129,37 @@ jobs:
           at: ~/project
       - sonarcloud/scan
 
+  repository_security_scan:
+    executor: docker_executor
+    steps:
+      - checkout
+      - run:
+          name: Install Trivy
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y wget gnupg lsb-release
+            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key |
+              gpg --dearmor |
+              sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+            echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" |
+              sudo tee /etc/apt/sources.list.d/trivy.list
+            sudo apt-get update
+            sudo apt-get install -y trivy
+      - run:
+          name: Scan repository with Trivy
+          command: |
+            mkdir -p reports/security
+            trivy fs \
+              --scanners vuln,misconfig,secret \
+              --severity HIGH,CRITICAL \
+              --ignore-unfixed \
+              --format json \
+              --output reports/security/trivy-repository.json \
+              --exit-code 1 \
+              .
+      - store_artifacts:
+          path: reports/security/trivy-repository.json
+          destination: security/trivy-repository.json
 workflows:
   quality:
     jobs:
@@ -136,6 +167,7 @@ workflows:
       - frontend_style
       - backend_tests
       - frontend_tests
+      - repository_security_scan
       - sonar_analysis:
           context:
             - SonarCloud
@@ -144,3 +176,4 @@ workflows:
             - frontend_style
             - backend_tests
             - frontend_tests
+            - repository_security_scan
