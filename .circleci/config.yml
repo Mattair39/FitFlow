@@ -209,6 +209,14 @@ jobs:
           name: Publish Docker images
           command: bash fitFlow/scripts/ci/publish_images.sh
 
+  gitops_deploy:
+    executor: docker_executor
+    steps:
+      - checkout
+      - run:
+          name: Update Kubernetes manifests
+          command: bash fitFlow/scripts/ci/update_gitops_manifests.sh
+
 workflows:
   quality:
     jobs:
@@ -271,4 +279,15 @@ workflows:
             branches:
               only:
                 - develop
+                - master
+
+      - gitops_deploy:
+          context:
+            - DockerHub
+            - GitHubGitOps
+          requires:
+            - build_and_scan_images
+          filters:
+            branches:
+              only:
                 - master
