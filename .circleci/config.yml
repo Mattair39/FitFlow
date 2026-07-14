@@ -136,6 +136,8 @@ workflows:
       - backend_tests
       - frontend_tests
       - sonar_analysis:
+          context:
+            - SonarCloud
           requires:
             - backend_style
             - frontend_style
